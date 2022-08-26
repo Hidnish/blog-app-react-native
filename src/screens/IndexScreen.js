@@ -1,18 +1,32 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
 	View,
 	Text,
 	StyleSheet,
 	FlatList,
-	Button,
 	TouchableOpacity,
 } from 'react-native';
 import { Context as BlogContext } from '../context/BlogContext';
 import { Feather } from '@expo/vector-icons';
 
-const IndexScreen = ({ navigation }) => { // props passed by the createStackNavigatior()'s object
+const IndexScreen = ({ navigation }) => {
+	// props passed by the createStackNavigatior()'s object
 
-	const { state, deleteBlogPost } = useContext(BlogContext);
+	const { state, deleteBlogPost, getBlogPosts } = useContext(BlogContext);
+
+	useEffect(() => {
+		getBlogPosts();
+
+		const listener = navigation.addListener('didFocus', () =>
+			getBlogPosts()
+		); // every time user navigates to this screen call getBlogPosts()
+
+		return () => {
+			listener.remove();
+		}; // clean up after component unmounts (eliminate listeners)
+
+	}, []);
+
 	return (
 		<View>
 			<FlatList
@@ -21,7 +35,9 @@ const IndexScreen = ({ navigation }) => { // props passed by the createStackNavi
 				renderItem={({ item }) => {
 					return (
 						<TouchableOpacity
-							onPress={() => navigation.navigate('Show', { id: item.id })}
+							onPress={() =>
+								navigation.navigate('Show', { id: item.id })
+							}
 							activeOpacity={1}
 						>
 							<View style={styles.row}>
@@ -69,7 +85,7 @@ const styles = StyleSheet.create({
 	},
 	icon: {
 		fontSize: 24,
-	}
+	},
 });
 
 export default IndexScreen;
